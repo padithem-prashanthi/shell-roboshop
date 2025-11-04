@@ -1,7 +1,8 @@
 #!/bin/bash
 
 AMI_ID="ami-09c813fb71547fc4f"
-SG_ID="sg-025666e837e625b07"
+SG_ID="sg-025666e837e625b07" #replace with your id
+ZONE_ID="Z05761976OP3DK70EYZV" #replace with your id
 
 for instance in $@
 do
@@ -15,5 +16,23 @@ do
     fi
 
     echo "$instance: $IP"
+      aws route53 change-resource-record-sets \
+    --hosted-zone-id $ZONE_ID \
+    --change-batch '
+    {
+        "Comment": "Updating record set"
+        ,"Changes": [{
+        "Action"              : "UPSERT"
+        ,"ResourceRecordSet"  : {
+            "Name"              : "'$RECORD_NAME'"
+            ,"Type"             : "A"
+            ,"TTL"              : 1
+            ,"ResourceRecords"  : [{
+                "Value"         : "'$IP'"
+            }]
+        }
+        }]
+    }
+    '
 done
    
